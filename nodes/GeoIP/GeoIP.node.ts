@@ -6,15 +6,20 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 
-export class ExampleNode implements INodeType {
+import geolite2, { GeoIpDbName } from 'geolite2-redist';
+// import * as geolite2 from 'geolite2-redist';
+// const geolite2 = require('geolite2-redist');
+import maxmind, { AsnResponse, CityResponse } from 'maxmind';
+
+export class GeoIPNode implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Example Node',
-		name: 'exampleNode',
+		displayName: 'GeoIP Node',
+		name: 'geoIPNode',
 		group: ['transform'],
 		version: 1,
-		description: 'Basic Example Node',
+		description: 'GeoIP node to lookup location or ASN information from an IP',
 		defaults: {
-			name: 'Example Node',
+			name: 'GeoIP',
 		},
 		inputs: ['main'],
 		outputs: ['main'],
@@ -22,35 +27,52 @@ export class ExampleNode implements INodeType {
 			// Node properties which the user gets displayed and
 			// can change on the node.
 			{
-				displayName: 'My String',
-				name: 'myString',
+				displayName: 'Lookup Type',
+				name: 'lookupType',
+				type: 'options',
+				default: 'City',
+				options: [
+					{
+						name: "Location",
+						value: "City",
+					},
+					{
+						name: "ASN",
+						value: "ASN",
+					},
+				],
+				description: 'The IP to Lookup',
+			},
+			{
+				displayName: 'IP',
+				name: 'ip',
 				type: 'string',
 				default: '',
-				placeholder: 'Placeholder value',
-				description: 'The description text',
+				placeholder: '1.1.1.1',
+				description: 'The IP to Lookup',
 			},
 		],
 	};
 
-	// The function below is responsible for actually doing whatever this node
-	// is supposed to do. In this case, we're just appending the `myString` property
-	// with whatever the user has entered.
-	// You can make async calls and use `await`.
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
 
 		let item: INodeExecutionData;
-		let myString: string;
+		let ip: string;
 
-		// Iterates over all input items and add the key "myString" with the
-		// value the parameter "myString" resolves to.
-		// (This could be a different value for each item in case it contains an expression)
+		const lookupType = this.getNodeParameter('lookupType', 0, 'City') as 'City' | 'ASN';
+
+		const reader = await geolite2.open(
+			geolite2.GeoIpDbName[lookupType], // Use the enum instead of a string!
+			(path) => maxmind.open<CityResponse|AsnResponse>(path),
+		);
+
 		for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
 			try {
-				myString = this.getNodeParameter('myString', itemIndex, '') as string;
+				ip = this.getNodeParameter('ip', itemIndex, '') as string;
 				item = items[itemIndex];
-
-				item.json['myString'] = myString;
+				console.log(JSON.stringify(item, null, 2));
+				item.json.lookup = reader.get(ip);
 			} catch (error) {
 				// This node should never fail but we want to showcase how
 				// to handle errors.
