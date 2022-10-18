@@ -6,12 +6,9 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 
-import geolite2, { GeoIpDbName } from 'geolite2-redist';
-// import * as geolite2 from 'geolite2-redist';
-// const geolite2 = require('geolite2-redist');
 import maxmind, { AsnResponse, CityResponse } from 'maxmind';
 
-export class GeoIPNode implements INodeType {
+export class GeoIP implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'GeoIP Node',
 		name: 'geoIPNode',
@@ -62,8 +59,10 @@ export class GeoIPNode implements INodeType {
 
 		const lookupType = this.getNodeParameter('lookupType', 0, 'City') as 'City' | 'ASN';
 
-		const reader = await geolite2.open(
-			geolite2.GeoIpDbName[lookupType], // Use the enum instead of a string!
+		const { open, GeoIpDbName } = await import("geolite2-redist");
+
+		const reader = await open(
+			GeoIpDbName[lookupType],
 			(path) => maxmind.open<CityResponse|AsnResponse>(path),
 		);
 
