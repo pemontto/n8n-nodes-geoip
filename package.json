@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-geoip",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "n8n node for looking up geo information from an IP",
   "keywords": [
     "n8n-community-node-package"

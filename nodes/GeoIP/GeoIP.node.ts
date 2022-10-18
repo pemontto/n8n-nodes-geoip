@@ -24,7 +24,8 @@ export function getLanguage(
 export class GeoIP implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'GeoIP Node',
-		name: 'geoIPNode',
+		name: 'geoIP',
+		icon: 'fa:globe',
 		group: ['transform'],
 		version: 1,
 		description: 'GeoIP node to lookup location or ASN information from an IP',
