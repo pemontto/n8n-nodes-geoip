@@ -1,15 +1,15 @@
 {
   "name": "n8n-nodes-geoip",
   "version": "0.0.1",
-  "description": "",
+  "description": "n8n node for looking up geo information from an IP",
   "keywords": [
     "n8n-community-node-package"
   ],
   "license": "MIT",
   "homepage": "",
   "author": {
-    "name": "",
-    "email": ""
+    "name": "pemontto",
+    "email": "pemontto@gmail.com"
   },
   "repository": {
     "type": "git",

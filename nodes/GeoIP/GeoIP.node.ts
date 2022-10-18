@@ -1,5 +1,6 @@
 import { IExecuteFunctions } from 'n8n-core';
 import {
+	IDataObject,
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
@@ -7,6 +8,18 @@ import {
 } from 'n8n-workflow';
 
 import maxmind, { AsnResponse, CityResponse } from 'maxmind';
+
+export function getLanguage(
+	lookupObject: IDataObject,
+	language: string,
+
+): string {
+	if (!lookupObject) {
+		return '';
+	}
+	const languages = (lookupObject.names || {}) as IDataObject;
+	return (languages[language] || languages['en']) as string;
+}
 
 export class GeoIP implements INodeType {
 	description: INodeTypeDescription = {
@@ -48,6 +61,57 @@ export class GeoIP implements INodeType {
 				placeholder: '1.1.1.1',
 				description: 'The IP to Lookup',
 			},
+			{
+				displayName: 'Simplify',
+				name: 'simplifyOutput',
+				type: 'boolean',
+				default: true,
+				description: 'Whether to return a simplified version of the response instead of the raw data',
+				displayOptions: {
+					hide: {
+						lookupType: ['ASN'],
+					},
+				},
+			},
+			{
+				displayName: 'Options',
+				name: 'options',
+				type: 'collection',
+				placeholder: 'Add Option',
+				default: {},
+				options: [
+					{
+						displayName: 'Put Output In Field',
+						name: 'outputField',
+						type: 'string',
+						default: '',
+						placeholder: 'geo',
+						description: 'The name of the output field to put the lookup data in',
+					},
+					{
+						displayName: 'Language',
+						name: 'language',
+						type: 'options',
+						displayOptions: {
+							show: {
+								'/simplifyOutput': [ true ],
+							},
+						},
+						options: [
+							{ name: 'Chinese', value: 'zh-CN' },
+							{ name: 'English', value: 'en' },
+							{ name: 'French', value: 'fr' },
+							{ name: 'German', value: 'de' },
+							{ name: 'Japansese', value: 'ja' },
+							{ name: 'Portuguese', value: 'pt-BR' },
+							{ name: 'Russian', value: 'ru' },
+							{ name: 'Spanish', value: 'es' },
+						],
+						default: 'en',
+						description: 'Language to display location names in',
+					},
+				],
+			},
 		],
 	};
 
@@ -58,9 +122,11 @@ export class GeoIP implements INodeType {
 		let ip: string;
 
 		const lookupType = this.getNodeParameter('lookupType', 0, 'City') as 'City' | 'ASN';
+		const simplifyOutput = this.getNodeParameter('simplifyOutput', 0, true) as boolean;
+		const outputField = this.getNodeParameter('options.outputField', 0, '') as string;
+		const language = this.getNodeParameter('options.language', 0, 'en') as string;
 
 		const { open, GeoIpDbName } = await import("geolite2-redist");
-
 		const reader = await open(
 			GeoIpDbName[lookupType],
 			(path) => maxmind.open<CityResponse|AsnResponse>(path),
@@ -70,8 +136,38 @@ export class GeoIP implements INodeType {
 			try {
 				ip = this.getNodeParameter('ip', itemIndex, '') as string;
 				item = items[itemIndex];
-				console.log(JSON.stringify(item, null, 2));
-				item.json.lookup = reader.get(ip);
+
+				let output: IDataObject = {};
+				const res = reader.get(ip) as IDataObject;
+
+				if (!res) {
+					continue;
+				}
+
+				if (simplifyOutput && lookupType === "City") {
+					output.city = getLanguage(res.city as IDataObject, language);
+					output.country = getLanguage(res.country as IDataObject, language);
+					output.location = getLanguage(res.location as IDataObject, language);
+					output.continent = getLanguage(res.continent as IDataObject, language);
+					output.postal = (res.postal as IDataObject || {} ).code;
+					output.registered_country = getLanguage(res.registered_country as IDataObject, language);
+					const latitude = (res.location as IDataObject || {} ).latitude;
+					const longitude = (res.location as IDataObject || {} ).longitude;
+					if (latitude && longitude) {
+						output.coordinates = `${latitude},${longitude}`;
+					}
+					output.subdivisions = (res.subdivisions as IDataObject[] || []).map(
+						x => getLanguage(x as IDataObject, language),
+					);
+				} else {
+					output = res;
+				}
+
+				if (outputField) {
+					item.json[outputField] = output;
+				} else {
+					item.json = { ...item.json, ...output};
+				}
 			} catch (error) {
 				// This node should never fail but we want to showcase how
 				// to handle errors.
