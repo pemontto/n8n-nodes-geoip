@@ -25,7 +25,8 @@ export function getLanguage(
 export class GeoIP implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'GeoIP Node',
-		name: 'geoIp',
+		// eslint-disable-next-line n8n-nodes-base/node-class-description-name-miscased
+		name: 'geoIP', // Keep for backwards compatibility with npm v0.0.2
 		icon: 'file:../../icons/geoip.svg',
 		group: ['transform'],
 		version: 1,

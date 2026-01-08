@@ -31,7 +31,7 @@
     "n8nNodesApiVersion": 1,
     "strict": false,
     "nodes": [
-      "dist/nodes/GeoIp/GeoIp.node.js"
+      "dist/nodes/GeoIp/GeoIP.node.js"
     ]
   },
   "dependencies": {
