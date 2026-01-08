@@ -1,10 +1,11 @@
-import { IExecuteFunctions } from 'n8n-core';
 import {
-	IDataObject,
-	INodeExecutionData,
-	INodeType,
-	INodeTypeDescription,
+	NodeConnectionTypes,
 	NodeOperationError,
+	type IDataObject,
+	type IExecuteFunctions,
+	type INodeExecutionData,
+	type INodeType,
+	type INodeTypeDescription,
 } from 'n8n-workflow';
 
 import maxmind, { AsnResponse, CityResponse } from 'maxmind';
@@ -24,16 +25,17 @@ export function getLanguage(
 export class GeoIP implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'GeoIP Node',
-		name: 'geoIP',
-		icon: 'fa:globe',
+		name: 'geoIp',
+		icon: 'file:../../icons/geoip.svg',
 		group: ['transform'],
 		version: 1,
+		usableAsTool: true,
 		description: 'GeoIP node to lookup location or ASN information from an IP',
 		defaults: {
 			name: 'GeoIP',
 		},
-		inputs: ['main'],
-		outputs: ['main'],
+		inputs: [NodeConnectionTypes.Main],
+		outputs: [NodeConnectionTypes.Main],
 		properties: [
 			// Node properties which the user gets displayed and
 			// can change on the node.
