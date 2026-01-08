@@ -1,5 +1,7 @@
 # n8n-nodes-geoip
 
+![GeoIP Logo](icons/geoip.svg)
+
 This is an n8n community node for looking up geo info for an IP.
 
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
