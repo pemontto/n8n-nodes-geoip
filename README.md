@@ -40,6 +40,13 @@ For Docker-based deployments add the following line before the font installation
 
 `RUN cd /usr/local/lib/node_modules/n8n && npm install n8n-nodes-geoip`
 
+As the node downloads its own MMDB files you may need to give write permissions to the node user
+
+```dockerfile
+# Fix to be able to download MMDB files
+RUN chown -R node:node /usr/local/lib/node_modules/n8n/node_modules/geolite2-redist
+```
+
 ## Compatibility
 
 n8n v0.187+
