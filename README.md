@@ -1,3 +1,5 @@
+<img src="https://raw.githubusercontent.com/pemontto/n8n-nodes-geoip/master/icons/geoip.svg" width="120" alt="GeoIP Logo" />
+
 # n8n-nodes-geoip
 
 This is an n8n community node for looking up geo info for an IP.
