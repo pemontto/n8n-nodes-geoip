@@ -2,54 +2,30 @@
 
 # n8n-nodes-geoip
 
-This is an n8n community node for looking up geo info for an IP.
+This is an n8n community node for looking up geo info for an IP address.
 
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
-- [Installation](#installation)
-  - [Community Nodes (Recommended)](#community-nodes-recommended)
-  - [Manual installation](#manual-installation)
-- [Compatibility](#compatibility)
-- [Example Workflow](#example-workflow)
-- [Resources](#resources)
-- [License](#license)
+## Operations
+
+The GeoIP node supports the following operations:
+
+- **Lookup All** - Get both location and ASN information in a single lookup (default)
+- **Lookup ASN** - Get Autonomous System Number information only
+- **Lookup Location** - Get geographic location information only (city, country, coordinates, etc.)
+
+## Features
+
+- Combined lookup mode for location + ASN data in one request
+- Simplified output mode with localized location names
+- Support for 8 languages (English, Chinese, French, German, Japanese, Portuguese, Russian, Spanish)
+- Optional field mapping to customize output structure
 
 ## Installation
 
-Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
+Install via **Settings > Community Nodes** in n8n and search for `n8n-nodes-geoip`.
 
-### Community Nodes (Recommended)
-
-For users on n8n v0.187+, your instance owner can install this node from [Community Nodes](https://docs.n8n.io/integrations/community-nodes/installation/).
-
-1. Go to **Settings > Community Nodes**.
-2. Select **Install**.
-3. Enter `n8n-nodes-geoip` in **Enter npm package name**.
-4. Agree to the [risks](https://docs.n8n.io/integrations/community-nodes/risks/) of using community nodes: select **I understand the risks of installing unverified code from a public source**.
-5. Select **Install**.
-
-After installing the node, you can use it like any other node. n8n displays the node in search results in the **Nodes** panel.
-
-### Manual installation
-
-To get started install the package in your n8n root directory:
-
-`npm install n8n-nodes-geoip`
-
-For Docker-based deployments add the following line before the font installation command in your [n8n Dockerfile](https://github.com/n8n-io/n8n/blob/master/docker/images/n8n/Dockerfile):
-
-`RUN cd /usr/local/lib/node_modules/n8n && npm install n8n-nodes-geoip`
-
-As the node downloads its own MMDB files you may need to give write permissions to the node user
-
-```dockerfile
-# Fix to be able to download MMDB files
-RUN chown -R node:node /usr/local/lib/node_modules/n8n/node_modules/geolite2-redist
-```
-
-## Compatibility
-
-n8n v0.187+
+See the [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/installation/) for more details.
 
 ## Example Workflow
 
@@ -70,8 +46,8 @@ $ curl -s "http://localhost:5678/webhook/geo?ip=17.17.1.0" | jq
   "subdivisions": [
     "North Carolina"
   ],
-  "autonomous_system_number": 714,
-  "autonomous_system_organization": "APPLE-ENGINEERING"
+  "asn": 714,
+  "asn_org": "APPLE-ENGINEERING"
 }
 ```
 
@@ -97,72 +73,13 @@ $ curl -s "http://localhost:5678/webhook/geo?ip=17.17.1.0" | jq
       "webhookId": ""
     },
     {
-      "parameters": {},
-      "name": "Start",
-      "type": "n8n-nodes-base.start",
-      "typeVersion": 1,
-      "position": [
-        0,
-        680
-      ]
-    },
-    {
       "parameters": {
-        "ip": "={{ $json[\"ip\"] }}",
+        "ip": "={{ $json.query.ip }}",
         "options": {}
       },
       "name": "GeoIP",
-      "type": "n8n-nodes-geoip.geoIPNode",
-      "typeVersion": 1,
-      "position": [
-        800,
-        140
-      ]
-    },
-    {
-      "parameters": {
-        "lookupType": "ASN",
-        "ip": "={{ $json[\"ip\"] }}",
-        "options": {}
-      },
-      "name": "ASN",
-      "type": "n8n-nodes-geoip.geoIPNode",
-      "typeVersion": 1,
-      "position": [
-        800,
-        320
-      ]
-    },
-    {
-      "parameters": {
-        "mode": "combine",
-        "combinationMode": "multiplex",
-        "options": {}
-      },
-      "name": "Merge",
-      "type": "n8n-nodes-base.merge",
+      "type": "n8n-nodes-geoip.geoIP",
       "typeVersion": 2,
-      "position": [
-        1020,
-        240
-      ]
-    },
-    {
-      "parameters": {
-        "keepOnlySet": true,
-        "values": {
-          "string": [
-            {
-              "name": "ip",
-              "value": "={{ $json.query.ip }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "name": "IP",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 1,
       "position": [
         560,
         240
@@ -174,45 +91,7 @@ $ curl -s "http://localhost:5678/webhook/geo?ip=17.17.1.0" | jq
       "main": [
         [
           {
-            "node": "IP",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "GeoIP": {
-      "main": [
-        [
-          {
-            "node": "Merge",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "ASN": {
-      "main": [
-        [
-          {
-            "node": "Merge",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "IP": {
-      "main": [
-        [
-          {
             "node": "GeoIP",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "ASN",
             "type": "main",
             "index": 0
           }
