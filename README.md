@@ -106,7 +106,8 @@ $ curl -s "http://localhost:5678/webhook/geo?ip=17.17.1.0" | jq
 
 ## Resources
 
-- [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
+- [MaxMind GeoLite2 Databases](https://dev.maxmind.com/geoip/geolite2-free-geolocation-data) - Free GeoIP databases used by this node
+- [n8n Community Nodes](https://docs.n8n.io/integrations/community-nodes/)
 
 ## License
 
