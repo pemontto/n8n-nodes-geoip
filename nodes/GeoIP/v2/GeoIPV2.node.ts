@@ -25,29 +25,11 @@ export class GeoIPV2 implements INodeType {
 			outputs: [NodeConnectionTypes.Main],
 			properties: [
 				{
-					displayName: 'Resource',
-					name: 'resource',
-					type: 'options',
-					noDataExpression: true,
-					default: 'ip',
-					options: [
-						{
-							name: 'IP Address',
-							value: 'ip',
-						},
-					],
-				},
-				{
 					displayName: 'Operation',
 					name: 'operation',
 					type: 'options',
 					noDataExpression: true,
 					default: 'all',
-					displayOptions: {
-						show: {
-							resource: ['ip'],
-						},
-					},
 					options: [
 						{
 							name: 'Lookup All',
